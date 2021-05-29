@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:medical/bil.dart';
+import 'package:medical/screen/medi.dart';
 
-import 'medi.dart';
 
 void main() {
   runApp(MyApp());
@@ -38,34 +38,37 @@ class _MyHomePageState extends State<MyHomePage> {
         body: Container(
           decoration: BoxDecoration(
             image: DecorationImage(
-              image: AssetImage("images/Group 1.png"),
+              image: AssetImage("images/aa.png"),
               fit: BoxFit.cover,
             ),
           ),
           child: Stack(children: [
             Positioned(
-                left: 82, top: 545,
-                width: 62,
-                height: 62,
+                left: 76, top: 553,
+                width: 70,
+                height: 70,
+
                 // ignore: deprecated_member_use
-                child: FlatButton(color: Colors.transparent,
+                child: IconButton(
+                  icon:Icon(Icons.arrow_drop_down, size: 50.0,color: Color(0xff3AD1B7,)),
+                  // icon: Icon(Icons.search,color: Color(0xff3AD1B7, )),
                  // splashColor: Colors.black26,
                   onPressed: () { Navigator.of(context).push(MaterialPageRoute(
                       builder: (_) {
-                        return Medi();
+                        return NoteList();
                       }
                   ));
                   },
-                  child: null,
 
-                  // Image.asset("images/Medicine.png"))
-            )),
+
+            )
+            ),
             Positioned(
-                right: 82, top: 545,
+                right: 70, top: 545,
                 width: 62,
                 height: 62,
-                // ignore: deprecated_member_use
-                child: FlatButton(color: Colors.transparent,
+                child: IconButton(
+                  icon:Icon(Icons.arrow_right, size: 50.0,color: Color(0xff3AD1B7,)),
                  // splashColor: Colors.black26,
                   onPressed: () { Navigator.of(context).push(MaterialPageRoute(
                       builder: (_) {
@@ -73,10 +76,14 @@ class _MyHomePageState extends State<MyHomePage> {
                       }
                   ));
                   },
-                  child: null,
 
-                  // Image.asset("images/Medicine.png"))
+
+
                 )),
+            
+
+            
+
           ]),
         ));
   }
