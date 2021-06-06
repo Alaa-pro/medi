@@ -1,0 +1,173 @@
+import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:medical/modules/meddi.dart';
+import 'package:medical/screen/selectmedi.dart';
+import 'package:sqflite/sqflite.dart';
+import '../database.dart';
+import 'medi_detail.dart';
+
+
+class NoteList extends StatefulWidget {
+
+  @override
+  State<StatefulWidget> createState() {
+
+    return NoteListState();
+  }
+}
+
+class NoteListState extends State<NoteList> {
+
+  DatabaseHelper databaseHelper = DatabaseHelper();
+  List<Note> noteList;
+  int count = 0;
+
+  @override
+  Widget build(BuildContext context) {
+
+    if (noteList == null) {
+      // ignore: deprecated_member_use
+      noteList = List<Note>();
+      updateListView();
+    }
+
+    return Scaffold(
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        title: Text("medi"),
+        centerTitle: true,
+        backgroundColor: Color(0xff3AD1B7),
+        elevation: 0,),
+      body: getNoteListView(),
+
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Color(0xff3AD1B7),
+        onPressed: () {
+          debugPrint('FAB clicked');
+          navigateToDetail(Note('',0,0,0,0,0,0,0,0,0), 'Add Note');
+        },
+
+        tooltip: 'Add Note',
+
+        child: Icon(Icons.add),
+
+      ),
+
+    );
+  }
+
+  ListView getNoteListView() {
+
+    TextStyle titleStyle = Theme.of(context).textTheme.subtitle1;
+
+    return ListView.builder(
+      shrinkWrap: true,
+      itemCount: count,
+      itemBuilder: (BuildContext context, int position) {
+        return Card(
+          color: Colors.white,
+          elevation: 2.0,
+          child: ListTile(
+
+            leading: CircleAvatar(
+              backgroundColor: Color(0xff3AD1B7),
+              child: Icon(Icons.local_pharmacy),
+            ),
+
+            title: Text(this.noteList[position].title, style: titleStyle,),
+
+            subtitle: Text('${noteList[position].min}-${noteList[position].max}-${noteList[position].dosage}/'
+              '${noteList[position].min1}-${noteList[position].max1}-${noteList[position].dosage1},'
+                '/${noteList[position].min2}-${noteList[position].max2}-${noteList[position].dosage2}',),
+
+            trailing: GestureDetector(
+              child: Icon(Icons.delete, color:Color(0xff3AD1B7),),
+              onTap: () {
+                _delete(context, noteList[position]);
+              },
+            ),
+
+
+            onTap: () {
+              debugPrint("ListTile Tapped");
+              navigateToDetail(this.noteList[position],'Edit Note');
+            },
+
+          ),
+        );
+      },
+    );
+  }
+
+  // Returns the priority color
+  // Color getPriorityColor(int priority) {
+  //   switch (priority) {
+  //     case 1:
+  //       return Colors.red;
+  //       break;
+  //     case 2:
+  //       return Colors.yellow;
+  //       break;
+  //
+  //     default:
+  //       return Colors.yellow;
+  //   }
+  // }
+
+  // Returns the priority icon
+  // Icon getPriorityIcon(int priority) {
+  //   switch (priority) {
+  //     case 1:
+  //       return Icon(Icons.play_arrow);
+  //       break;
+  //     case 2:
+  //       return Icon(Icons.keyboard_arrow_right);
+  //       break;
+  //
+  //     default:
+  //       return Icon(Icons.keyboard_arrow_right);
+  //   }
+  // }
+
+  void _delete(BuildContext context, Note note) async {
+
+    int result = await databaseHelper.deleteNote(note.id);
+    if (result != 0) {
+      _showSnackBar(context, 'Note Deleted Successfully');
+      updateListView();
+    }
+  }
+
+  void _showSnackBar(BuildContext context, String message) {
+
+    final snackBar = SnackBar(content: Text(message));
+    // ignore: deprecated_member_use
+    Scaffold.of(context).showSnackBar(snackBar);
+  }
+
+  void navigateToDetail(Note note, String title) async {
+    bool result = await Navigator.push(context, MaterialPageRoute(builder: (context) {
+      return NoteDetail(note);
+    }));
+
+    if (result == true) {
+      updateListView();
+    }
+  }
+
+  void updateListView() {
+
+    final Future<Database> dbFuture = databaseHelper.initializeDatabase();
+    dbFuture.then((database) {
+
+      Future<List<Note>> noteListFuture = databaseHelper.getNoteList();
+      noteListFuture.then((noteList) {
+        setState(() {
+          this.noteList = noteList;
+          this.count = noteList.length;
+        });
+      });
+    });
+  }
+}
+
