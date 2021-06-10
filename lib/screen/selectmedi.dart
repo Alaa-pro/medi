@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:medical/modules/meddi.dart';
-
 import 'package:sqflite/sqflite.dart';
 import '../bil.dart';
 import '../database.dart';
@@ -18,8 +17,8 @@ class GGg extends StatefulWidget {
 
 class MediListState extends State<GGg> {
 
-
-
+  TextEditingController cntrtitle=TextEditingController();
+  bool search=false;
   DatabaseHelper databaseHelper = DatabaseHelper();
   Note note;
   List<Note> noteList;
@@ -36,11 +35,61 @@ class MediListState extends State<GGg> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: Text("list"),
+        title:!search ?
+        Text("list"):TextField(
+          onChanged: (value) {
+            filterSearchResults(value);
+          },
+          cursorColor: Colors.white,
+          style: TextStyle(color: Colors.white),
+          decoration: InputDecoration(
+              suffixIcon: Icon(
+                Icons.search,
+                color: Colors.white,
+              ),
+              hintText: 'Medi',
+              hintStyle: TextStyle(color: Colors.white),
+          ),
+        ),
+
         centerTitle: true,
-        backgroundColor: Color(0xff3AD1B7),
-        elevation: 0,),
-      body:getNoteListView(),
+        backgroundColor: Color(0xff2198F3),
+        elevation: 0,
+
+        actions: [
+          search ?
+          IconButton(
+            icon: Icon(Icons.cancel),
+            onPressed:(){
+              setState(() {
+                this.search=!this.search;
+                updateListView();
+
+              });
+
+            }
+        )
+          :IconButton(
+              icon: Icon(Icons.search),
+              onPressed:(){
+                setState(() {
+                  this.search=!this.search;
+                  updateListView();
+
+                });
+
+              }
+          ), // search icon button
+
+          //add more icons here
+        ],
+
+      ),
+
+      body:
+
+      getNoteListView(),
+
     );
   }
 
@@ -49,12 +98,18 @@ class MediListState extends State<GGg> {
     TextStyle titleStyle = Theme.of(context).textTheme.subtitle1;
 
     return ListView.builder(
-      itemCount: count,
+      itemCount: noteList.length,
       itemBuilder: (BuildContext context, int position) {
         return Card(
           color: Colors.white,
           elevation: 2.0,
           child: ListTile(
+
+            leading: CircleAvatar(
+              backgroundColor: Color(0xff2198F3),
+              child: Image.asset("images/m.png"),
+              // child: Icon(Icons.local_pharmacy),
+            ),
 
             title: Text(this.noteList[position].title, style: titleStyle,),
 
@@ -111,16 +166,37 @@ class MediListState extends State<GGg> {
       });
     });
   }
-  void calcul(w){
-    if (w>5)
-    print('$w');
-  }
-
-
-  save() async {
-
+ void  Search() async {
+    note.title=cntrtitle.text as String;
+    await databaseHelper.chercherMed(note.title);
   }
   void moveToLastScreen() {
     Navigator.pop(context, true);
+  }
+//search medicam
+  filterSearchResults(String query) {
+    List<Note> SearchList = [];
+    SearchList.addAll(noteList);
+    List<Note> ListData = [];
+    if (query.isNotEmpty) {
+      List<Note> ListData = [];
+      SearchList.forEach((item) {
+        if (item.title.toString().contains(query)) {
+          ListData.add(item);
+        }
+      });
+      setState(() {
+        noteList.clear();
+        noteList.addAll(ListData);
+
+      });
+      return;
+     }
+      else {
+      setState(() {
+        noteList.clear();
+        noteList.addAll(ListData);
+      });
+    }
   }
 }
